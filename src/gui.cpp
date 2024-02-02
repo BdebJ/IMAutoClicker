@@ -11,11 +11,34 @@ LRESULT WINAPI gui::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     switch (msg)
     {
+    case WM_LBUTTONDOWN:
+        position = MAKEPOINTS(lParam); // set click points
+        return 0;
+
+    case WM_MOUSEMOVE: 
+    {
+        if (wParam == MK_LBUTTON)
+        {
+            const auto points = MAKEPOINTS(lParam);
+            auto rect = ::RECT{ };
+
+            GetWindowRect(hwnd, &rect);
+
+            rect.left += points.x - position.x;
+            rect.top += points.y - position.y;
+
+            if (position.x >= 0 &&
+                position.x <= WIDTH &&
+                position.y >= 0 && position.y <= 20)
+                SetWindowPos(hwnd, HWND_TOPMOST, rect.left, rect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOZORDER );
+        }
+        return 0;
+    }
     case WM_SIZE:
         if (wParam == SIZE_MINIMIZED)
             return 0;
-        gui::g_ResizeWidth = (UINT)LOWORD(lParam); // Queue resize
-        gui::g_ResizeHeight = (UINT)HIWORD(lParam);
+        g_ResizeWidth  = (UINT)LOWORD(lParam); // Queue resize
+        g_ResizeHeight = (UINT)HIWORD(lParam);
         return 0;
     case WM_SYSCOMMAND:
         if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
@@ -30,31 +53,32 @@ LRESULT WINAPI gui::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void gui::CreateMainWindow(const wchar_t* window_name, const wchar_t* class_name) noexcept
 {
-    wc.cbSize = sizeof(wc);
-    wc.style = CS_CLASSDC;
-    wc.lpfnWndProc = WndProc;
-    wc.cbClsExtra = 0L;
-    wc.cbWndExtra = 0L;
-    wc.hInstance = GetModuleHandle(nullptr);
-    wc.hIcon = nullptr;
-    wc.hCursor = nullptr;
-    wc.hbrBackground = nullptr;
-    wc.lpszMenuName = nullptr;
-    wc.lpszClassName = class_name;
-    wc.hIconSm = nullptr;
+    wc.cbSize           = sizeof(wc);
+    wc.style            = CS_CLASSDC;
+    wc.lpfnWndProc      = WndProc;
+    wc.cbClsExtra       = 0L;
+    wc.cbWndExtra       = 0L;
+    wc.hInstance        = GetModuleHandle(nullptr);
+    wc.hIcon            = nullptr;
+    wc.hCursor          = nullptr;
+    wc.hbrBackground    = nullptr;
+    wc.lpszMenuName     = nullptr;
+    wc.lpszClassName    = class_name;
+    wc.hIconSm          = nullptr;
+
     ::RegisterClassExW(&wc);
+
     hwnd = ::CreateWindowW( class_name, 
                             window_name, 
-                            WS_OVERLAPPEDWINDOW, 
+                            WS_POPUP, 
                             100, 
                             100, 
-                            1280, 
-                            800, 
+                            WIDTH, 
+                            HEIGHT, 
                             nullptr, 
                             nullptr, 
                             wc.hInstance, 
                             nullptr );
-
     // Show the window
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
@@ -71,19 +95,20 @@ bool gui::CreateDeviceD3D() noexcept
     // Setup swap chain
     DXGI_SWAP_CHAIN_DESC sd;
     ZeroMemory(&sd, sizeof(sd));
-    sd.BufferCount = 2;
-    sd.BufferDesc.Width = 0;
-    sd.BufferDesc.Height = 0;
-    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    sd.BufferDesc.RefreshRate.Numerator = 60;
-    sd.BufferDesc.RefreshRate.Denominator = 1;
-    sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.OutputWindow = hwnd;
-    sd.SampleDesc.Count = 1;
-    sd.SampleDesc.Quality = 0;
-    sd.Windowed = TRUE;
-    sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+    sd.BufferCount                          = 2;
+    sd.BufferDesc.Width                     = 0;
+    sd.BufferDesc.Height                    = 0;
+    sd.BufferDesc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sd.BufferDesc.RefreshRate.Numerator     = 60;
+    sd.BufferDesc.RefreshRate.Denominator   = 1;
+    sd.Flags                                = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    sd.BufferUsage                          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.OutputWindow                         = hwnd;
+    sd.SampleDesc.Count                     = 1;
+    sd.SampleDesc.Quality                   = 0;
+    sd.Windowed                             = TRUE;
+    sd.SwapEffect                           = DXGI_SWAP_EFFECT_DISCARD;
 
     UINT createDeviceFlags = 0;
 #ifdef _DEBUG
@@ -92,9 +117,21 @@ bool gui::CreateDeviceD3D() noexcept
 
     D3D_FEATURE_LEVEL featureLevel;
     const D3D_FEATURE_LEVEL featureLevelArray[2] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
-    HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+    HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, 
+                                                D3D_DRIVER_TYPE_HARDWARE, 
+                                                nullptr, 
+                                                createDeviceFlags, 
+                                                featureLevelArray, 
+                                                2, 
+                                                D3D11_SDK_VERSION, 
+                                                &sd, 
+                                                &g_pSwapChain, 
+                                                &g_pd3dDevice, 
+                                                &featureLevel, 
+                                                &g_pd3dDeviceContext);
     if (res == DXGI_ERROR_UNSUPPORTED) // Try high-performance WARP software driver if hardware is not available.
         res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+
     if (res != S_OK)
         return false;
 
@@ -104,17 +141,13 @@ bool gui::CreateDeviceD3D() noexcept
 
 void gui::ResetDevice() noexcept
 {
-    // Invalidate ImGui device objects
     ImGui_ImplDX11_InvalidateDeviceObjects();
-
-    CleanupDeviceD3D();
+    DestroyDeviceD3D();
     CreateDeviceD3D();
-
-    // Recreate ImGui device objects
     ImGui_ImplDX11_CreateDeviceObjects();
 }
 
-void gui::CleanupDeviceD3D() noexcept
+void gui::DestroyDeviceD3D() noexcept
 {
     CleanupRenderTarget();
     if (g_pSwapChain) 
@@ -156,10 +189,10 @@ void gui::CreateImGui() noexcept
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    io = &ImGui::GetIO();
-    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io->IniFilename = NULL;                                    // Disable config file generation
+
+    io                  = &ImGui::GetIO();
+    io->ConfigFlags     |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io->IniFilename     = NULL;                                    // Disable config file generation
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -184,12 +217,8 @@ void gui::BeginRender() noexcept
     {
         ::TranslateMessage(&msg);
         ::DispatchMessage(&msg);
-        if (msg.message == WM_QUIT) 
-            to_exit = true;
+        if (msg.message == WM_QUIT) { app_running = false; }
     }
-    //TODO Add exit check to main loop, crashes if returned here
-    //if (to_exit)
-    //    return;
 
     // Handle window resize (we don't resize directly in the WM_SIZE handler)
     if (g_ResizeWidth != 0 && g_ResizeHeight != 0)
@@ -208,59 +237,39 @@ void gui::BeginRender() noexcept
 
 void gui::Render() noexcept
 {
-    // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-    if (show_demo_window)
-        ImGui::ShowDemoWindow(&show_demo_window);
+    static float f = 0.0f;
+    static int counter = 0;
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-    {
-        static float f = 0.0f;
-        static int counter = 0;
+    ImGui::SetNextWindowPos({ 0, 0 });
+    ImGui::SetNextWindowSize({ WIDTH, HEIGHT });
 
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("Hello, world!", &app_running, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
 
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
+    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
-        ImGui::End();
-    }
-
-    // 3. Show another simple window.
-    if (show_another_window)
-    {
-        ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
-        if (ImGui::Button("Close Me"))
-            show_another_window = false;
-        ImGui::End();
-    }
+    if (ImGui::Button("Button")) { counter++; }             // Buttons return true when clicked (most widgets return true when edited/activated)
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
+    ImGui::End();
 }
 
 void gui::EndRender() noexcept
 {
-    // Rendering
     ImGui::Render();
-
-    const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
     g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-    g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, clear_color_with_alpha);
 
+    // To add color to background
+    const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
+    g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, clear_color_with_alpha);
+    
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-    g_pSwapChain->Present(1, 0); // Present with vsync
-    //g_pSwapChain->Present(0, 0); // Present without vsync
+    g_pSwapChain->Present(1, 0); // Present with vsync(1,0), without vsync(0,0)
 
-    // Rreset device in case of loss of D3D11 device
+    // Reset device in case of loss of D3D11 device
     HRESULT result = g_pd3dDevice->GetDeviceRemovedReason();
     if (result == DXGI_ERROR_DEVICE_REMOVED || result == DXGI_ERROR_DEVICE_RESET)
     {

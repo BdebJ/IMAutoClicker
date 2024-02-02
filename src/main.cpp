@@ -7,7 +7,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     gui::CreateDeviceD3D();
     gui::CreateImGui();
 
-    while (!gui::to_exit)
+    while (gui::app_running)
     {
         gui::BeginRender();
         gui::Render();
@@ -15,7 +15,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     }
     // destroy gui
     gui::DestroyImGui();
-    gui::CleanupDeviceD3D();
+    gui::DestroyDeviceD3D();
     gui::DestroyMainWindow();
 
     return EXIT_SUCCESS;
