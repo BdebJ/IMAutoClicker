@@ -1,16 +1,26 @@
 #pragma once
+#include <Windows.h>
 #include <d3d11.h>
+#include <thread>
+
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
+#ifdef _DEBUG
+#include <iostream>
+#include <format>
+#endif // DEBUG
 
 namespace gui
 {
     // Window size
     constexpr int WIDTH     = 400;
-    constexpr int HEIGHT    = 200;
+    constexpr int HEIGHT    = 300;
+
+    inline std::jthread click_worker;     // Thread to delegate autoclick to (very bad impl)
 
 	inline bool app_running = true;     // App exit flag
+    inline bool autoclick_running = false;
 
     // WinAPI window vars
     inline HWND hwnd        = nullptr;

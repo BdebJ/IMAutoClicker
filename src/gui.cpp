@@ -1,4 +1,5 @@
 #include "gui.h"
+#include "action.h"
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -20,7 +21,7 @@ LRESULT WINAPI gui::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (wParam == MK_LBUTTON)
         {
             const auto points = MAKEPOINTS(lParam);
-            auto rect = ::RECT{ };
+            RECT rect = ::RECT{ };
 
             GetWindowRect(hwnd, &rect);
 
@@ -237,21 +238,75 @@ void gui::BeginRender() noexcept
 
 void gui::Render() noexcept
 {
-    static float f = 0.0f;
-    static int counter = 0;
+    //State Vars
+    static int click_interval[4] = { 0, 0, 0, 0 };
+    static bool randomize_clicks_flag = false;
+    static int random_time_ms = 0;
+
+    const char* ms_btn_list[] = { "Left", "Middle", "Right" };
+    static int ms_btn_selected = 0;
+
+    const char* click_type_list[] = { "Single", "Double" };
+    static int click_type_selected = 0;
+
+    static int e = 0;
 
     ImGui::SetNextWindowPos({ 0, 0 });
     ImGui::SetNextWindowSize({ WIDTH, HEIGHT });
 
-    ImGui::Begin("Hello, world!", &app_running, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+    ImGui::Begin("IM Auto Clicker", &app_running, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
 
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    ImGui::SeparatorText("Click Interval");
+    {
+        ImGui::PushItemWidth(-FLT_MIN);
+        ImGui::InputInt4("", click_interval);
+        ImGui::PopItemWidth();
+        ImGui::Text("Hours         Mins          Secs          Milliseconds");
 
-    if (ImGui::Button("Button")) { counter++; }             // Buttons return true when clicked (most widgets return true when edited/activated)
+        ImGui::Dummy({0,10});
+        ImGui::Checkbox("Randomize clicks", &randomize_clicks_flag);
+
+        ImGui::SameLine();
+        ImGui::Dummy({ 20,0 });
+
+        ImGui::SameLine();
+        ImGui::PushItemWidth(125);
+        ImGui::InputInt("Offset in ms", &random_time_ms);
+        ImGui::PopItemWidth();
+    }
+    ImGui::SeparatorText("Click Options");
+    {
+        ImGui::PushItemWidth(100);
+        ImGui::Combo("Mouse Button", &ms_btn_selected, ms_btn_list, IM_ARRAYSIZE(ms_btn_list));
+        ImGui::Combo("Click Type", &click_type_selected, click_type_list, IM_ARRAYSIZE(click_type_list));
+        ImGui::PopItemWidth();
+    }
+    ImGui::SeparatorText("Cursor Position");
+    {
+        ImGui::RadioButton("Mouse Location", &e, 0); 
+        ImGui::SameLine();
+        ImGui::RadioButton("Pick Location", &e, 1);
+    }
+
+    if (ImGui::Button("Start")) 
+    { 
+        if (!autoclick_running)
+        {
+            autoclick_running = true;
+            click_worker = std::jthread(action::AutoClickWorker, click_interval[3]);
+            click_worker.detach();
+        }
+    }
     ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
+    if (ImGui::Button("Stop"))
+    {
+        if (autoclick_running)
+        {
+            autoclick_running = false;
+            click_worker.request_stop();
+        }
+    }
+
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
     ImGui::End();
 }
