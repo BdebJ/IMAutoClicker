@@ -1,3 +1,5 @@
+#include "state.h"
+#include "action.h"
 #include "gui.h"
 
 #ifdef _DEBUG
@@ -12,11 +14,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     gui::CreateDeviceD3D();
     gui::CreateImGui();
 
-    while (gui::app_running)
+    while (app_running)
     {
         gui::BeginRender();
         gui::Render();
         gui::EndRender();
+
+        action::AutoClickManager();
     }
     // destroy gui
     gui::DestroyImGui();

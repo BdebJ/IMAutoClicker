@@ -238,19 +238,6 @@ void gui::BeginRender() noexcept
 
 void gui::Render() noexcept
 {
-    //State Vars
-    static int click_interval[4] = { 0, 0, 0, 50 };
-    static bool randomize_clicks_flag = false;
-    static int random_time_ms = 0;
-
-    const char* ms_btn_list[] = { "Left", "Middle", "Right" };
-    static int ms_btn_selected = 0;
-
-    //const char* click_type_list[] = { "Single", "Double" };
-    //static int click_type_selected = 0;
-
-    static int e = 0;
-
     ImGui::SetNextWindowPos({ 0, 0 });
     ImGui::SetNextWindowSize({ WIDTH, HEIGHT });
 
@@ -271,7 +258,7 @@ void gui::Render() noexcept
 
         ImGui::SameLine();
         ImGui::PushItemWidth(125);
-        ImGui::InputInt("Offset in ms", &random_time_ms);
+        ImGui::InputInt("Offset in ms", &random_interval_offset);
         ImGui::PopItemWidth();
     }
     ImGui::SeparatorText("Click Options");
@@ -283,32 +270,19 @@ void gui::Render() noexcept
     }
     ImGui::SeparatorText("Cursor Position");
     {
-        ImGui::RadioButton("Mouse Location", &e, 0); 
+        ImGui::RadioButton("Mouse Location", &click_loc_type, 0);
         //ImGui::SameLine();
-        //ImGui::RadioButton("Pick Location", &e, 1);
+        //ImGui::RadioButton("Pick Location", &click_loc_type, 1);
     }
 
-    if (ImGui::Button("Start")) 
+    if (ImGui::Button("Start (F6)")) 
     {
-        if (!autoclick_running)
-        {
-            autoclick_running = true;
-            int interval_duration = click_interval[3] + (click_interval[2] * 1000) + (click_interval[1] * 60 * 1000) + (click_interval[0] * 60 * 60 * 1000);
-            if(randomize_clicks_flag)
-                click_worker = std::jthread(action::AutoClickWorker, static_cast<utils::MouseButton>(ms_btn_selected), interval_duration, random_time_ms);
-            else
-                click_worker = std::jthread(action::AutoClickWorker, static_cast<utils::MouseButton>(ms_btn_selected), interval_duration, 0);
-            click_worker.detach();
-        }
+        run_autoclick = true;
     }
     ImGui::SameLine();
-    if (ImGui::Button("Stop"))
+    if (ImGui::Button("Stop (F6)"))
     {
-        if (autoclick_running)
-        {
-            autoclick_running = false;
-            click_worker.request_stop();
-        }
+        run_autoclick = false;
     }
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);

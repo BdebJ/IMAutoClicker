@@ -8,7 +8,7 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
-#include "action.h"
+#include "state.h"
 #ifdef _DEBUG
 #include <iostream>
 #include <format>
@@ -16,16 +16,6 @@
 
 namespace gui
 {
-    // Window size
-    constexpr int WIDTH     = 400;
-    constexpr int HEIGHT    = 300;
-
-    inline std::jthread click_worker;     // Thread to delegate autoclick to (very bad impl)
-
-	inline bool app_running = true;     // App exit flag
-    inline bool autoclick_running = false;
-    inline bool worker_thread_running = false;
-
     // WinAPI window vars
     inline HWND hwnd        = nullptr;
     inline WNDCLASSEXW wc   = {};
@@ -38,7 +28,8 @@ namespace gui
     inline ID3D11Device* g_pd3dDevice                       = nullptr;
     inline ID3D11DeviceContext* g_pd3dDeviceContext         = nullptr;
     inline IDXGISwapChain* g_pSwapChain                     = nullptr;
-    inline UINT g_ResizeWidth = 0, g_ResizeHeight           = 0;
+    inline UINT g_ResizeWidth                               = 0,
+                g_ResizeHeight                              = 0;
     inline ID3D11RenderTargetView* g_mainRenderTargetView   = nullptr;
 
     // App background color

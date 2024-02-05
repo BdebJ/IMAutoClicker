@@ -16,12 +16,21 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{c729ac45-4deb-49cf-88ce-6152bdfdafd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Action">
+      <UniqueIdentifier>{bbbc279f-6832-42fd-a1e5-b6d529696eb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{b1344b48-8e2a-4547-9bff-36805e7e9ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Simulate">
+      <UniqueIdentifier>{69ab3879-9b1d-44f8-9e4a-e24c4f0ee267}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utililty">
+      <UniqueIdentifier>{3d859a21-41c7-4ddc-8636-0f06aadf60da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
@@ -45,20 +54,20 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\simulate.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>Source Files\Utililty</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gui.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="src\action.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Action</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\simulate.cpp">
+      <Filter>Source Files\Simulate</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -83,14 +92,20 @@
     <ClInclude Include="imgui\backends\imgui_impl_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\simulate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\action.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Action</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulate.h">
+      <Filter>Source Files\Simulate</Filter>
+    </ClInclude>
+    <ClInclude Include="src\state.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Utililty</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui.h">
+      <Filter>Source Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

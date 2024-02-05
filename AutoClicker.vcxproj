@@ -114,6 +114,7 @@
     <ClInclude Include="src\action.h" />
     <ClInclude Include="src\gui.h" />
     <ClInclude Include="src\simulate.h" />
+    <ClInclude Include="src\state.h" />
     <ClInclude Include="src\utils.h" />
   </ItemGroup>
   <ItemGroup>
