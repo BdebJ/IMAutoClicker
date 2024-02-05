@@ -16,6 +16,7 @@
     <ProjectGuid>{d8889eb7-cf7e-4c7f-a99a-8f782d461494}</ProjectGuid>
     <RootNamespace>AutoClicker</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>IMAutoClicker</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
