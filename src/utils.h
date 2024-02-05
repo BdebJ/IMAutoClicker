@@ -3,7 +3,8 @@
 
 namespace utils
 {
-	//std::mt19937_64 RandomGeneratorEngine();
-	//std::mt19937_64 mt{ RandomGeneratorEngine() };
-	//int GetRandomNum(int max);
+	enum MouseButton { LEFT, MIDDLE, RIGHT };
+	std::mt19937_64 RandomGeneratorEngine();
+	inline std::mt19937_64 mt{ RandomGeneratorEngine() };
+	int GetRandomNum(int max);
 }

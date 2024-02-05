@@ -2,10 +2,13 @@
 #include <Windows.h>
 #include <d3d11.h>
 #include <thread>
+#include <functional>
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
+
+#include "action.h"
 #ifdef _DEBUG
 #include <iostream>
 #include <format>
@@ -21,6 +24,7 @@ namespace gui
 
 	inline bool app_running = true;     // App exit flag
     inline bool autoclick_running = false;
+    inline bool worker_thread_running = false;
 
     // WinAPI window vars
     inline HWND hwnd        = nullptr;

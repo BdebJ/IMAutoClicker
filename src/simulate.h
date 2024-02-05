@@ -1,7 +1,9 @@
 #pragma once
 #include <Windows.h>
 
+#include "utils.h"
+
 namespace simulate
 {
-	void MouseClick();
+	void MouseClick(utils::MouseButton btn_type);
 }

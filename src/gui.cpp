@@ -1,5 +1,5 @@
 #include "gui.h"
-#include "action.h"
+
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -71,7 +71,7 @@ void gui::CreateMainWindow(const wchar_t* window_name, const wchar_t* class_name
 
     hwnd = ::CreateWindowW( class_name, 
                             window_name, 
-                            WS_POPUP, 
+                            WS_POPUP,
                             100, 
                             100, 
                             WIDTH, 
@@ -239,15 +239,15 @@ void gui::BeginRender() noexcept
 void gui::Render() noexcept
 {
     //State Vars
-    static int click_interval[4] = { 0, 0, 0, 0 };
+    static int click_interval[4] = { 0, 0, 0, 50 };
     static bool randomize_clicks_flag = false;
     static int random_time_ms = 0;
 
     const char* ms_btn_list[] = { "Left", "Middle", "Right" };
     static int ms_btn_selected = 0;
 
-    const char* click_type_list[] = { "Single", "Double" };
-    static int click_type_selected = 0;
+    //const char* click_type_list[] = { "Single", "Double" };
+    //static int click_type_selected = 0;
 
     static int e = 0;
 
@@ -278,22 +278,26 @@ void gui::Render() noexcept
     {
         ImGui::PushItemWidth(100);
         ImGui::Combo("Mouse Button", &ms_btn_selected, ms_btn_list, IM_ARRAYSIZE(ms_btn_list));
-        ImGui::Combo("Click Type", &click_type_selected, click_type_list, IM_ARRAYSIZE(click_type_list));
+        //ImGui::Combo("Click Type", &click_type_selected, click_type_list, IM_ARRAYSIZE(click_type_list));
         ImGui::PopItemWidth();
     }
     ImGui::SeparatorText("Cursor Position");
     {
         ImGui::RadioButton("Mouse Location", &e, 0); 
-        ImGui::SameLine();
-        ImGui::RadioButton("Pick Location", &e, 1);
+        //ImGui::SameLine();
+        //ImGui::RadioButton("Pick Location", &e, 1);
     }
 
     if (ImGui::Button("Start")) 
-    { 
+    {
         if (!autoclick_running)
         {
             autoclick_running = true;
-            click_worker = std::jthread(action::AutoClickWorker, click_interval[3]);
+            int interval_duration = click_interval[3] + (click_interval[2] * 1000) + (click_interval[1] * 60 * 1000) + (click_interval[0] * 60 * 60 * 1000);
+            if(randomize_clicks_flag)
+                click_worker = std::jthread(action::AutoClickWorker, static_cast<utils::MouseButton>(ms_btn_selected), interval_duration, random_time_ms);
+            else
+                click_worker = std::jthread(action::AutoClickWorker, static_cast<utils::MouseButton>(ms_btn_selected), interval_duration, 0);
             click_worker.detach();
         }
     }
