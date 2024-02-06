@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 
+#include "imgui.h"
 #include "utils.h"
 #include "state.h"
 #include "simulate.h"

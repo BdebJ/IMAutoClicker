@@ -8,6 +8,25 @@ void action::AutoClickManager()
 		run_autoclick = !run_autoclick;
 	}
 
+	if (click_loc_type == 1)
+	{
+		if (!set_loc_flag)
+		{
+			POINT cursor_pos;
+			GetCursorPos(&cursor_pos);
+			ms_loc[0] = cursor_pos.x;
+			ms_loc[1] = cursor_pos.y;
+			if (GetAsyncKeyState(VK_LBUTTON) & KF_UP)
+			{
+				set_loc_flag = true;
+			}
+		}
+	}
+	else
+	{
+		set_loc_flag = false;
+	}
+
 	if (run_autoclick)
 	{
 		if (!thread_running)

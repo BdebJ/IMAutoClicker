@@ -248,33 +248,53 @@ void gui::Render() noexcept
         ImGui::PushItemWidth(-FLT_MIN);
         ImGui::InputInt4("", click_interval);
         ImGui::PopItemWidth();
-        ImGui::Text("Hours         Mins          Secs          Milliseconds");
+        ImGui::Text("Hours           Mins            Secs           Milliseconds");
 
         ImGui::Dummy({0,10});
         ImGui::Checkbox("Randomize clicks", &randomize_clicks_flag);
 
         ImGui::SameLine();
-        ImGui::Dummy({ 20,0 });
+        ImGui::Dummy({ 100,0 });
 
         ImGui::SameLine();
-        ImGui::PushItemWidth(125);
-        ImGui::InputInt("Offset in ms", &random_interval_offset);
-        ImGui::PopItemWidth();
-    }
-    ImGui::SeparatorText("Click Options");
-    {
         ImGui::PushItemWidth(100);
-        ImGui::Combo("Mouse Button", &ms_btn_selected, ms_btn_list, IM_ARRAYSIZE(ms_btn_list));
-        //ImGui::Combo("Click Type", &click_type_selected, click_type_list, IM_ARRAYSIZE(click_type_list));
+        ImGui::InputInt("Offset ms", &random_interval_offset);
         ImGui::PopItemWidth();
     }
+
+    ImGui::Columns(2);
+    {
+        ImGui::SeparatorText("Click Options");
+        {
+            ImGui::PushItemWidth(100);
+            ImGui::Combo("Mouse Button", &ms_btn_selected, ms_btn_list, IM_ARRAYSIZE(ms_btn_list));
+            ImGui::Combo("Click Type", &click_type_selected, click_type_list, IM_ARRAYSIZE(click_type_list));
+            ImGui::PopItemWidth();
+        }
+        ImGui::NextColumn();
+        {
+            ImGui::SeparatorText("Click Repeat");
+            ImGui::RadioButton("Repeat until stopped", &click_repeat_type, 0);
+            ImGui::RadioButton("Repeat", &click_repeat_type, 1);
+            ImGui::SameLine();
+            ImGui::PushItemWidth(100);
+            ImGui::InputInt("times", &click_repeat_count);
+            ImGui::PopItemWidth();
+        }
+    }
+    ImGui::Columns();
+
     ImGui::SeparatorText("Cursor Position");
     {
         ImGui::RadioButton("Mouse Location", &click_loc_type, 0);
-        //ImGui::SameLine();
-        //ImGui::RadioButton("Pick Location", &click_loc_type, 1);
+        ImGui::SameLine();
+        ImGui::RadioButton("Pick Location", &click_loc_type, 1);
+        ImGui::PushItemWidth(-FLT_MIN);
+        ImGui::SameLine();
+        ImGui::InputInt2("", ms_loc);
+        ImGui::PopItemWidth();
     }
-
+    ImGui::Text("                                    X            Y");
     if (ImGui::Button("Start (F6)")) 
     {
         run_autoclick = true;
