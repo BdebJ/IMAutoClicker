@@ -8,7 +8,7 @@ void action::AutoClickManager()
 		run_autoclick = !run_autoclick;
 	}
 
-	if (click_loc_type == 1)
+	if (click_loc_type)
 	{
 		if (!set_loc_flag)
 		{
@@ -34,11 +34,11 @@ void action::AutoClickManager()
 			thread_running = true;
 
 			int interval_duration = (click_interval[0] * 60 * 60 * 1000) +
-									(click_interval[1] * 60 * 1000) +
-									(click_interval[2] * 1000) +
-									 click_interval[3];
+				(click_interval[1] * 60 * 1000) +
+				(click_interval[2] * 1000) +
+				click_interval[3];
 #ifdef _DEBUG
-			printf("\nStarting autoclicks. \nInterval:\033[1;31m %d ms\033[0m \nInterval random offset:\033[1;31m %d ms\033[0m\n\n", interval_duration, (randomize_clicks_flag == true ? random_interval_offset : 0) );
+			std::cout << std::format("\nStarting autoclicks. \nInterval: {} ms \nInterval random offset: {} ms\n\n", interval_duration, (randomize_clicks_flag == true ? random_interval_offset : 0));
 #endif // _DEBUG
 			if (randomize_clicks_flag)
 			{
@@ -56,26 +56,34 @@ void action::AutoClickManager()
 		if (thread_running)
 		{
 #ifdef _DEBUG
-			printf("\nStopping autoclicks\n\n");
+			std::cout << "\nStopping autoclicks\n";
 #endif // _DEBUG
-			thread_running = false;
 			click_worker.request_stop();
-
+			thread_running = false;
 		}
 	}
 }
 
 void action::AutoClickWorker(std::stop_token s_token, utils::MouseButton btn_type, int interval_ms, int random_offset_ms)
 {
-	while (!s_token.stop_requested())
+	int debug_click_count = 0;
+	while (!s_token.stop_requested() && (click_repeat_type ? click_repeat_count : true))
 	{
 		simulate::MouseClick(btn_type);
+		debug_click_count++;
+		if (click_repeat_type == 1 && click_repeat_count > 0)
+		{
+			click_repeat_count--;
+		}
 
 		int random_interval_ms = utils::GetRandomNum(random_offset_ms);
+		int actual_interval = interval_ms + random_interval_ms < MIN_INTERVAL ? MIN_INTERVAL : interval_ms + random_interval_ms;
 #ifdef _DEBUG
-		printf("Sleeping for \033[1;32m%d\n\033[0m", interval_ms + random_interval_ms);
+		std::cout << std::format("Sleeping for {} ms\n", actual_interval);
+		std::cout << std::format("Clicked {} times\n", debug_click_count);
 #endif // _DEBUG
-		std::chrono::milliseconds sleep_time{ interval_ms + random_interval_ms };
+		std::chrono::milliseconds sleep_time{ actual_interval };
 		std::this_thread::sleep_for(sleep_time);
 	}
+	return;
 }
