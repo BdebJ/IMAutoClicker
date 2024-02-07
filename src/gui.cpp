@@ -60,7 +60,7 @@ void gui::CreateMainWindow(const wchar_t* window_name, const wchar_t* class_name
     wc.cbClsExtra       = 0L;
     wc.cbWndExtra       = 0L;
     wc.hInstance        = GetModuleHandle(nullptr);
-    wc.hIcon            = nullptr;
+    wc.hIcon            = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1));;
     wc.hCursor          = nullptr;
     wc.hbrBackground    = nullptr;
     wc.lpszMenuName     = nullptr;
