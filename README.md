@@ -20,4 +20,7 @@ IMAutoClicker is an open-source Auto Clicker tool developed in C++ for Windows, 
 ## Acknowledgments
 - ImGui library by Omar Cornut (https://github.com/ocornut/imgui)
 
+## License
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT). See the [LICENSE](LICENSE) file for details.
+
 ---
